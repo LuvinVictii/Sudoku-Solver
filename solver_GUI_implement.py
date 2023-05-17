@@ -15,6 +15,11 @@ def clear_board():
         for j in range(9):
             entry_list[i][j].set("")
 
+def print_board():
+    for row in board:
+        print(row)
+    print()
+
 def fill():
     global board, ans_loc, blank_loc
     
@@ -52,6 +57,34 @@ def fill():
     board[curr_i][curr_j] = 0
     return False
 
+def check_duplicate():
+    global board
+
+    for row in range(9):
+        for col in range(9):
+            num = board[row][col]
+            if num != 0:
+                # Check for duplicate number in the same row
+                if board[row].count(num) > 1:
+                    return True
+
+                # Check for duplicate number in the same column
+                for i in range(9):
+                    if board[i][col] == num and i != row:
+                        return True
+
+                # Check for duplicate number in the same 3x3 grid
+                start_row = (row // 3) * 3
+                start_col = (col // 3) * 3
+
+                for i in range(start_row, start_row + 3):
+                    for j in range(start_col, start_col + 3):
+                        if board[i][j] == num and (i != row or j != col):
+                            return True
+
+    return False
+
+
 def solve_sudoku():
     global board, ans_loc, blank_loc
     
@@ -65,11 +98,14 @@ def solve_sudoku():
             else:
                 board[i][j] = int(temp)
     
-    if fill():
-        update_board()
-        status_label.config(text="Sudoku is valid!", fg="green")
-    else:
+    if check_duplicate():
         status_label.config(text="Sudoku is invalid!", fg="red")
+    else:
+        if fill():
+            update_board()
+            status_label.config(text="Sudoku is valid!", fg="green")
+            print_board()
+
 
 def create_layout():
     root = tk.Tk()
@@ -107,13 +143,6 @@ def create_layout():
 
     status_label = tk.Label(root, text="Enter the Sudoku puzzle", fg="black")
     status_label.grid(row=11, columnspan=9, pady=10)
-
-    # Add horizontal grid lines
-    for i in range(1, 9):
-        if i % 3 == 0:
-            root.grid_rowconfigure(i, minsize=3)
-        else:
-            root.grid_rowconfigure(i, minsize=1)
 
     return entry_list, status_label, root
 
